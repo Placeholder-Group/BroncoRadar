@@ -7,6 +7,9 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+@app.route('/objective') #objective page 
+def objective():
+    return 'We are going to remake the Cal Poly Pomona Map Website'
 
 if __name__ == '__main__':
     # Run the app on localhost, port 5000
