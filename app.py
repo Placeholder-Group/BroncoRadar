@@ -10,6 +10,9 @@ def hello_world():
 @app.route('/objective') #objective page 
 def objective():
     return 'We are going to remake the Cal Poly Pomona Map Website'
+@app.route('/why') #a why/reason page for the revamp
+def why():
+    return 'The current CPP map page has outdated imagery as well as a clunky UI/UX experience that does not provide enough information for it to be useful'
 
 if __name__ == '__main__':
     # Run the app on localhost, port 5000
