@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>OpenStreetMap Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Leaflet CSS without the integrity attribute -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" crossorigin=""/>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      /* Set the map height to fill the browser window */
+      #map { height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <!-- Map container -->
+    <div id="map"></div>
+    
+    <!-- Load Leaflet JavaScript without the integrity attribute -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
+    <script>
+      // Hardcoded location of CPP
+      var latitude = 34.057919;
+      var longitude = -117.821342;
+      var zoomLevel = 17;
+
+      // Initialize the map with scroll wheel zoom and dragging enabled
+      var map = L.map('map', { scrollWheelZoom: true, dragging: true })
+                  .setView([latitude, longitude], zoomLevel);
+
+      // Load and display tile layer on the map using OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+    </script>
+  </body>
+</html>

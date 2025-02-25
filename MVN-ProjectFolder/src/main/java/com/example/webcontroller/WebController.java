@@ -1,6 +1,7 @@
 package com.example.webcontroller;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -75,6 +76,16 @@ public class WebController {
         } catch (Exception e){
             e.printStackTrace();
             return("An error occured during the linear equation system solving.");
+        }
+    }
+
+     // Nested controller for the /map endpoint
+    @Controller
+    static class MapController {
+        @GetMapping("/map")
+        public String getMapPage() {
+            // Redirect to "map.html" placed in src/main/resources/static/
+            return "redirect:/map.html";
         }
     }
 }
