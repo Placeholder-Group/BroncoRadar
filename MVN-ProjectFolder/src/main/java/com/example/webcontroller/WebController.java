@@ -15,6 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.google.common.base.Strings;
+
+
 @RestController
 public class WebController {
 
@@ -77,6 +80,17 @@ public class WebController {
             e.printStackTrace();
             return("An error occured during the linear equation system solving.");
         }
+    }
+
+
+    //Example using Guava as a library dependency from Maven
+    @GetMapping("/guavaExample")
+    public String guavaExample() {
+        String guavaMessage = Strings.padStart("Hello, Guava!", 30, '=');
+
+        // Print and return the Guava-powered message
+        System.out.println("Guava Output: " + guavaMessage);
+        return "Guava Output: " + guavaMessage;
     }
 
      // Nested controller for the /map endpoint
