@@ -17,10 +17,6 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.base.Strings;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 
 @RestController
 public class WebController {
@@ -85,33 +81,7 @@ public class WebController {
             return("An error occured during the linear equation system solving.");
         }
     }
-    
-   // HTTP endpoint to calculate the distance between Cal Poly Pomona and Pomona
-    @GetMapping("/calculate-distance")
-    public String calculateDistance() {
-        try {
-            // Coordinates for Cal Poly Pomona and Pomona (hardcoded)
-            double lat1 = 34.0656; // Cal Poly Pomona
-            double lon1 = -117.7116; // Cal Poly Pomona
-            double lat2 = 34.0550; // Pomona
-            double lon2 = -117.7500; // Pomona
 
-            // Create GeometryFactory for working with geometries
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-
-            // Create points for both coordinates (lat, lon)
-            Point point1 = geometryFactory.createPoint(new Coordinate(lon1, lat1));
-            Point point2 = geometryFactory.createPoint(new Coordinate(lon2, lat2));
-
-            // Calculate the distance (in meters) between the two points
-            double distance = point1.distance(point2);
-
-            return "The distance between Cal Poly Pomona and Pomona is: " + distance + " meters.";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error calculating distance.";
-        }
-    }
 
     //Example using Guava as a library dependency from Maven
     @GetMapping("/guavaExample")
