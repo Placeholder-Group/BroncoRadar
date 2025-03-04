@@ -1,0 +1,26 @@
+#MainPage
+{
+	background-color: beige;
+}
+
+
+#banner
+{
+	font-family: monospace;
+	background-color: darkgreen;  /* Set background color */
+	color: bisque;               /* Set text color */
+	text-align: center;         /* Center the text */
+	padding: 15px;              /* Add padding */
+	font-size: 24px;            /* Set font size */
+	font-weight: bold;         
+}
+
+.custom-label {
+	background-color: rgb(36, 86, 43);
+	padding: 5px;
+	border-radius: 15px;
+	font-size: 5px;
+	font-weight: bold;
+	color: wheat;
+	text-align: center;
+}

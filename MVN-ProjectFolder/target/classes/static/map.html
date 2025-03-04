@@ -1,41 +1,92 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>OpenStreetMap Example</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Load Leaflet CSS without the integrity attribute -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" crossorigin=""/>
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      /* Set the map height to fill the browser window */
-      #map { height: 100vh; }
-    </style>
-  </head>
-  <body>
-    <!-- Map container -->
-    <div id="map"></div>
-    
-    <!-- Load Leaflet JavaScript without the integrity attribute -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
-    <script>
-      // Hardcoded location of CPP
-      var latitude = 34.057919;
-      var longitude = -117.821342;
-      var zoomLevel = 17;
 
-      // Initialize the map with scroll wheel zoom and dragging enabled
-      var map = L.map('map', { scrollWheelZoom: true, dragging: true })
-                  .setView([latitude, longitude], zoomLevel);
+<head>
+	<meta charset="utf-8" />
+	<title>OpenStreetMap Example</title>
+	<link rel="stylesheet" href="stylesheet.css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Load Leaflet CSS -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" crossorigin="" />
+	<style>
+		html,
+		body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
 
-      // Load and display tile layer on the map using OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
-    </script>
-  </body>
+		/* Set the map height and width to a smaller size */
+		#map {
+			height: 500px;
+			/* Set the height of the map */
+			width: 100%;
+			/* Make the width 100% of the screen */
+			margin: 0 auto;
+			/* Center the map */
+		}
+	</style>
+</head>
+
+<body id="MainPage">
+
+	<header id="banner">
+        <h1>BRONCORADAR</h1>
+    </header>
+
+	<!-- Map container -->
+	<div id="map"></div>
+
+	<!-- Load Leaflet JavaScript -->
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
+	<script>
+		// Hardcoded location of CPP
+		var latitude = 34.057919;
+		var longitude = -117.821342;
+		var zoomLevel = 15;
+		var bounds = [
+			[34.049198,-117.830944],  // Southwest corner (latitude, longitude)
+			[34.064770,-117.807255]   // Northeast corner (latitude, longitude)
+		];
+
+		// Initialize the map with dragging and scroll wheel zoom disabled
+		var map = L.map('map', {
+			scrollWheelZoom: false,   // Disable scroll zoom
+			dragging: true,          // Disable map dragging
+			minZoom: zoomLevel,
+			zoomControl: true,        // Disable zoom controls
+			maxBounds: bounds,      // Set the drag boundaries
+			maxBoundsViscosity: 1.0 // Make the bounds harder to break
+		}).setView([latitude, longitude], zoomLevel);
+
+		// Load and display tile layer on the map using OpenStreetMap tiles
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+
+		map.on('drag', function () {
+			map.panInsideBounds(bounds);
+		});
+
+		var customLabel = L.divIcon({
+            className: 'custom-label', // Refer to the custom label class
+            html: '<b>2</b>', // The label text
+            iconSize: [5, 5] // Set the size of the label
+        });
+
+        // Add the label to the map at a specific location
+        L.marker([34.057919, -117.821342], { icon: customLabel }).addTo(map);
+
+        // Additional custom label at another location (Example)
+        var customLabel2 = L.divIcon({
+            className: 'custom-label', // Refer to the custom label class
+            html: '<b>1</b>', // The label text
+            iconSize: [5, 5] // Set the size of the label
+        });
+
+        L.marker([34.060000, -117.810000], { icon: customLabel2 }).addTo(map);
+
+	</script>
+</body>
+
 </html>
