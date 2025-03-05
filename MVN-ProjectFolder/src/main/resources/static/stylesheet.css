@@ -16,11 +16,109 @@
 }
 
 .custom-label {
-	background-color: rgb(36, 86, 43);
-	padding: 5px;
-	border-radius: 15px;
-	font-size: 5px;
-	font-weight: bold;
-	color: wheat;
+    background-color: rgba(46, 71, 31, 0.8);  /* Dark background */
+    color: beige;                           /* White text */
+    padding: 3px 3px;                     /* Padding to size the label */
+    border-radius: 8px;                     /* Rounded corners */
+    font-size: 16px;                        /* Font size */
+    font-weight: bold;
+    text-align: center;                     /* Horizontally center the text */
+    display: flex;                          /* Use Flexbox */
+    justify-content: center;                /* Horizontally center the text */
+    align-items: center;                    /* Vertically center the text */
+    cursor: pointer;                       /* Make it clickable */
+    white-space: nowrap;                    /* Prevent text wrapping */
+    user-select: none;                      /* Prevent text selection */
+}
+
+#map {
+	height: 700px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+/* Style for the directory */
+#labelDirectory {
+	max-width: 1200px;
+	margin: 20px auto;
+	padding: 10px;
+	background-color: rgb(216, 208, 186);
+	border-radius: 25px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 	text-align: center;
 }
+
+#labelDirectory ul {
+	padding-left: 0;
+	list-style-type: none;
+}
+
+#labelDirectory h3
+{
+	font-family: monospace;
+	color:rgba(46, 71, 31, 0.8);
+	font-size: 3vw;
+}
+
+#labelDirectory li {
+	display: inline-block;
+	margin: 5px 10px;
+}
+
+#labelDirectory button {
+	padding: 10px 20px;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	background-color: darkgreen;
+	color: beige;
+	border: none;
+	border-radius: 5px;
+	transition: background-color 0.3s;
+}
+
+#labelDirectory button:hover {
+	background-color: #45a049;
+}
+
+/* Style for the search bar */
+#searchBar {
+	width: 80%;
+	padding: 12px 20px;
+	font-size: 18px;
+	margin-bottom: 20px;
+	border: 1px solid #ccc;
+	border-radius: 30px; /* Rounded corners */
+	background-color: #fff;
+	color: #333;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+	transition: all 0.3s ease-in-out; /* Smooth transition for focus effect */
+}
+
+#searchBar:focus {
+	outline: none;
+	border-color: #4CAF50; /* Green border on focus */
+	box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3); /* Green shadow on focus */
+}
+
+#searchBar::placeholder {
+	color: #999; /* Light grey placeholder text */
+	font-style: italic;
+}
+
+/* Hover effect */
+#searchBar:hover {
+	border-color: #4CAF50; /* Change border color when hovered */
+}
+
+/* Style for the search icon in the banner */
+#searchIcon {
+
+	cursor: pointer;
+	font-size: 50px;
+	color: #fff;
+	position: absolute;
+	right: 40px;
+	top: 40px;
+}
+

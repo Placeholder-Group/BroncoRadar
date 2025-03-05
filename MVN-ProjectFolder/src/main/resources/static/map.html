@@ -4,6 +4,7 @@
 <head>
 	<meta charset="utf-8" />
 	<title>OpenStreetMap Example</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 	<link rel="stylesheet" href="stylesheet.css" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- Load Leaflet CSS -->
@@ -18,24 +19,34 @@
 
 		/* Set the map height and width to a smaller size */
 		#map {
-			height: 500px;
-			/* Set the height of the map */
+			height: 700px;
 			width: 100%;
-			/* Make the width 100% of the screen */
 			margin: 0 auto;
-			/* Center the map */
 		}
+
+		
 	</style>
 </head>
 
 <body id="MainPage">
 
 	<header id="banner">
-        <h1>BRONCORADAR</h1>
-    </header>
+		<h1>BRONCORADAR</h1>
+		<!-- Search icon -->
+		<i id="searchIcon" class="fas fa-search"></i>
+
+	</header>
 
 	<!-- Map container -->
 	<div id="map"></div>
+
+	<!-- Label directory below the map -->
+	<div id="labelDirectory">
+		<h3>Building Directory</h3>
+		<!-- Search Bar -->
+		<input type="text" id="searchBar" placeholder="Search for a building..." />
+		<ul id="labelList"></ul>
+	</div>
 
 	<!-- Load Leaflet JavaScript -->
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
@@ -43,20 +54,20 @@
 		// Hardcoded location of CPP
 		var latitude = 34.057919;
 		var longitude = -117.821342;
-		var zoomLevel = 15;
+		var zoomLevel = 16;
 		var bounds = [
-			[34.049198,-117.830944],  // Southwest corner (latitude, longitude)
-			[34.064770,-117.807255]   // Northeast corner (latitude, longitude)
+			[34.049198, -117.830944],  // Southwest corner (latitude, longitude)
+			[34.064770, -117.807255]   // Northeast corner (latitude, longitude)
 		];
 
 		// Initialize the map with dragging and scroll wheel zoom disabled
 		var map = L.map('map', {
 			scrollWheelZoom: false,   // Disable scroll zoom
-			dragging: true,          // Disable map dragging
+			dragging: true,           // Enable map dragging
 			minZoom: zoomLevel,
-			zoomControl: true,        // Disable zoom controls
-			maxBounds: bounds,      // Set the drag boundaries
-			maxBoundsViscosity: 1.0 // Make the bounds harder to break
+			zoomControl: true,        // Enable zoom controls
+			maxBounds: bounds,        // Set the drag boundaries
+			maxBoundsViscosity: 1.0   // Make the bounds harder to break
 		}).setView([latitude, longitude], zoomLevel);
 
 		// Load and display tile layer on the map using OpenStreetMap tiles
@@ -68,23 +79,103 @@
 			map.panInsideBounds(bounds);
 		});
 
-		var customLabel = L.divIcon({
-            className: 'custom-label', // Refer to the custom label class
-            html: '<b>2</b>', // The label text
-            iconSize: [5, 5] // Set the size of the label
-        });
+		// Minimum zoom level to show labels
+		var labelMinZoom = 17;
 
-        // Add the label to the map at a specific location
-        L.marker([34.057919, -117.821342], { icon: customLabel }).addTo(map);
+		// Create the labels and store them in an array
+		var markers = [
+			{ lat: 34.057919, lng: -117.821342, label: "15", name: "Library" },
+			{ lat: 34.058464, lng: -117.824813, label: "8", name: "Science" },
+			{ lat: 34.055948, lng: -117.820492, label: "66", name: "Bookstore" },
+			{ lat: 34.059199, lng: -117.822314, label: "9", name: "Engineering" },
+			{ lat: 34.059538, lng: -117.824298, label: "1", name: "Office" },
+			{ lat: 34.059930, lng: -117.821425, label: "17", name: "Engineering" },
+			{ lat: 34.061397, lng: -117.819877, label: "164", name: "Business" },
+			{ lat: 34.058140, lng: -117.825540, label: "3", name: "Science" },
+			{ lat: 34.057419, lng: -117.825509, label: "4", name: "Biological Science" },
+			{ lat: 34.057682, lng: -117.826501, label: "2", name: "Animal Science" },
+			{ lat: 34.057167, lng: -117.827424, label: "7", name: "Environmental" },
+			{ lat: 34.057823, lng: -117.828127, label: "46", name: "Health Services" },
+			{ lat: 34.056735, lng: -117.824680, label: "76", name: "Kellogg West" },
+			{ lat: 34.056753, lng: -117.823008, label: "24", name: "Music" },
+			{ lat: 34.057759, lng: -117.824463, label: "5", name: "CLASS" }
+		];
 
-        // Additional custom label at another location (Example)
-        var customLabel2 = L.divIcon({
-            className: 'custom-label', // Refer to the custom label class
-            html: '<b>1</b>', // The label text
-            iconSize: [5, 5] // Set the size of the label
-        });
+		// Function to create custom label markers
+		function createCustomLabel(lat, lng, text) {
+			var customLabel = L.divIcon({
+				className: 'custom-label',
+				html: `<b>${text}</b>`,
+				iconSize: [30, 30]
+			});
+			return L.marker([lat, lng], { icon: customLabel });
+		}
 
-        L.marker([34.060000, -117.810000], { icon: customLabel2 }).addTo(map);
+		// Create markers and add them to the map
+		var createdMarkers = [];
+		markers.forEach(function (markerData) {
+			var marker = createCustomLabel(markerData.lat, markerData.lng, markerData.label);
+			marker.addTo(map);
+			createdMarkers.push({ marker: marker, label: markerData.label });
+		});
+
+		// Function to handle zoom changes and show/hide labels
+		function updateLabelVisibility() {
+			var currentZoom = map.getZoom();
+
+			createdMarkers.forEach(function (markerData) {
+				if (currentZoom < labelMinZoom) {
+					map.removeLayer(markerData.marker); // Ensure label is hidden
+				} else {
+					if (!map.hasLayer(markerData.marker)) {
+						map.addLayer(markerData.marker); // Show label only if not already added
+					}
+				}
+			});
+		}
+
+		// Run the update function on zoom changes
+		map.on('zoomend', updateLabelVisibility);
+
+		// Also run it once on load to enforce initial visibility rules
+		updateLabelVisibility();
+
+		// Populate the directory with label buttons
+		const labelListElement = document.getElementById("labelList");
+		markers.forEach(function (markerData, index) {
+			var listItem = document.createElement("li");
+			var button = document.createElement("button");
+			button.textContent = `${markerData.name} - ${markerData.label} `;
+
+			// Add click event to center the map on the label's marker and zoom in
+			button.addEventListener("click", function () {
+				map.setView([markerData.lat, markerData.lng], 18); // Set the zoom level to 18 when clicking a label button
+			});
+			listItem.appendChild(button);
+			labelListElement.appendChild(listItem);
+		});
+
+		// Filter labels based on search input
+		document.getElementById("searchBar").addEventListener("input", function () {
+			var searchQuery = this.value.toLowerCase();
+
+			// Show or hide label buttons based on search input
+			var labelButtons = document.querySelectorAll("#labelList button");
+			labelButtons.forEach(function (button) {
+				var labelName = button.textContent.toLowerCase();
+				if (labelName.includes(searchQuery)) {
+					button.parentElement.style.display = "inline-block";
+				} else {
+					button.parentElement.style.display = "none";
+				}
+			});
+		});
+
+		// Scroll to search bar when search icon is clicked
+		document.getElementById("searchIcon").addEventListener("click", function() {
+			document.getElementById("searchBar").scrollIntoView({ behavior: "smooth" });
+			document.getElementById("searchBar").focus();
+		});
 
 	</script>
 </body>
