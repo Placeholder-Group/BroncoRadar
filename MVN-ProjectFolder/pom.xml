@@ -1,4 +1,4 @@
-  <!-- Project POM file for adding dependencies to the main website -->
+<!-- Project POM file for adding dependencies to the main website -->
 
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -60,6 +60,20 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>33.4.0-jre</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>4.5.1</version>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>4.5.1</version>
+        <scope>test</scope>
     </dependency>
 
   </dependencies>

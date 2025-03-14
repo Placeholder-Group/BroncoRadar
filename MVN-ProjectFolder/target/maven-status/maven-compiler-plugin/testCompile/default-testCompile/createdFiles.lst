@@ -1,4 +1,7 @@
-com/example/Calculator.class
-com/example/webcontroller/WebControllerTest.class
-com/example/CalculatorTest.class
-com/example/AppTest.class
+com\example\CalculatorTest.class
+com\example\Calculator.class
+com\example\webcontroller\LocationTrackingTest$LocationUpdateHandler.class
+com\example\webcontroller\WebControllerTest.class
+com\example\AppTest.class
+com\example\webcontroller\LocationTrackingTest.class
+com\example\webcontroller\LocationTrackingTest$Location.class
