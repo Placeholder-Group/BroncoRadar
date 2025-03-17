@@ -22,9 +22,18 @@
 			height: 700px;
 			width: 100%;
 			margin: 0 auto;
+			}
+
+		#locationIcon {
+			cursor: pointer;
+			margin-left: 15px;
+			color: #333;
+			font-size: 20px;
 		}
 
-		
+		#locationIcon:hover {
+			color: #006400;  /* Dark green to match the marker */
+		}
 	</style>
 </head>
 
@@ -34,7 +43,8 @@
 		<h1>BRONCORADAR</h1>
 		<!-- Search icon -->
 		<i id="searchIcon" class="fas fa-search"></i>
-
+		<!-- Location icon -->
+		<i id="locationIcon" class="fas fa-map-marker-alt"></i>
 	</header>
 
 	<!-- Map container -->
@@ -60,15 +70,25 @@
 			[34.064770, -117.807255]   // Northeast corner (latitude, longitude)
 		];
 
+		 // Define default location (Kellogg West)
+		var defaultLocation = {
+			lat: 34.056735,
+			lng: -117.824680,
+			name: "Kellogg West"
+		};
+
 		// Initialize the map with dragging and scroll wheel zoom disabled
 		var map = L.map('map', {
-			scrollWheelZoom: false,   // Disable scroll zoom
+			scrollWheelZoom: true, // Disable scroll zoom
 			dragging: true,           // Enable map dragging
 			minZoom: zoomLevel,
 			zoomControl: true,        // Enable zoom controls
 			maxBounds: bounds,        // Set the drag boundaries
 			maxBoundsViscosity: 1.0   // Make the bounds harder to break
 		}).setView([latitude, longitude], zoomLevel);
+
+		 // Add after map initialization
+		var locationMarker = null;
 
 		// Load and display tile layer on the map using OpenStreetMap tiles
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -177,6 +197,93 @@
 			document.getElementById("searchBar").focus();
 		});
 
+			// Create a custom icon for the "You are here" marker
+		var youAreHereIcon = L.divIcon({
+			className: 'custom-div-icon',
+			html: "<div style='background-color: #006400; width: 15px; height: 15px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.3);'></div>",
+			iconSize: [20, 20],
+			iconAnchor: [10, 10]
+		});
+
+		// Update the location icon click handler
+		document.getElementById('locationIcon').addEventListener('click', function() {
+			if (locationMarker) {
+				map.removeLayer(locationMarker);
+			}
+			
+			// Check if geolocation is supported
+			if (!navigator.geolocation) {
+				alert("Geolocation is not supported by your browser");
+				return;
+			}
+		
+			// Request location with modified options
+			map.locate({
+				setView: true,      // Automatically center map on location
+				maxZoom: 18,
+				timeout: 10000,     // 10 second timeout
+				enableHighAccuracy: true,
+				maximumAge: 0,      // Don't use cached position
+				watch: false        // Don't watch continuously
+			});
+		});
+
+		 // Add location event handlers
+		map.on('locationfound', function(e) {
+			// Remove existing marker if it exists
+			if (locationMarker) {
+				map.removeLayer(locationMarker);
+			}
+
+			// Check if location is within bounds
+			const isInBounds = e.latlng.lat >= bounds[0][0] && 
+							  e.latlng.lat <= bounds[1][0] && 
+							  e.latlng.lng >= bounds[0][1] && 
+							  e.latlng.lng <= bounds[1][1];
+
+			if (isInBounds) {
+				// Use actual location if within bounds
+				locationMarker = L.marker(e.latlng, {icon: youAreHereIcon}).addTo(map);
+				locationMarker.bindPopup("You are here");
+				map.setView(e.latlng, map.getZoom());
+			} else {
+				// Use default location if outside bounds
+				locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], {icon: youAreHereIcon}).addTo(map);
+				locationMarker.bindPopup("Default location: " + defaultLocation.name);
+				map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
+				alert("Location outside campus bounds. Defaulting to " + defaultLocation.name);
+			}
+		});
+
+		map.on('locationerror', onLocationError);
+
+		// Update the error handler with more specific messages
+		function onLocationError(e) {
+			let errorMessage;
+			switch(e.code) {
+				case 1:
+					errorMessage = "Please allow location access in your browser settings.";
+					break;
+				case 2:
+					errorMessage = "Location unavailable. Please try again or use the default location.";
+					break;
+				case 3:
+					errorMessage = "Location request timed out. Please try again.";
+					break;
+				default:
+					errorMessage = "Unable to find your location: " + e.message;
+			}
+			
+			alert(errorMessage);
+			
+			// Default to Kellogg West when location fails
+			if (locationMarker) {
+				map.removeLayer(locationMarker);
+			}
+			locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], {icon: youAreHereIcon}).addTo(map);
+			locationMarker.bindPopup("Default location: " + defaultLocation.name).openPopup();
+			map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
+		}
 	</script>
 </body>
 
