@@ -34,6 +34,21 @@
 		#locationIcon:hover {
 			color: #006400;  /* Dark green to match the marker */
 		}
+
+		/* Style for building labels */
+		.custom-label {
+			z-index: 400;
+		}
+
+		/* Style for location marker to appear above building labels */
+		.custom-div-icon {
+			z-index: 1000 !important;
+		}
+
+		/* Make the location marker popup appear above everything */
+		.leaflet-popup {
+			z-index: 1001;
+		}
 	</style>
 </head>
 
