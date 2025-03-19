@@ -1,3 +1,5 @@
+com/example/WebControllerApplication.class
+com/example/webcontroller/WebController$DefaultController.class
+com/example/webcontroller/WebConfig.class
 com/example/webcontroller/WebController.class
 com/example/webcontroller/WebController$MapController.class
-com/example/WebControllerApplication.class

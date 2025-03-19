@@ -17,9 +17,17 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.base.Strings;
 
-
 @RestController
 public class WebController {
+
+    // Default page endpoint
+    @Controller
+    public static class DefaultController {
+        @GetMapping("/")
+        public String getDefaultPage() {
+            return "redirect:/map";
+        }
+    }
 
     // Endpoint to trigger file operations
     @GetMapping("/fileOperations")
