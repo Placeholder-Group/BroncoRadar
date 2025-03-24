@@ -37,7 +37,7 @@ jobs:
         username: ec2-user
         port: 22
         key: ${{ secrets.KEY }}
-        source: "target/cs480-1.0.jar"
+        source: "MVN-ProjectFolder/target/my-project-1.0-SNAPSHOT.jar"
         target: "~/"
 
     - name: Run commands to start the Java server
@@ -49,6 +49,6 @@ jobs:
         port: 22
         script: |
           killall java
-          nohup java -jar /home/ec2-user/target/cs480-1.0.jar > log.txt &
+          nohup java -jar /home/ec2-user//Users/alexsanna/BroncoRadar/MVN-ProjectFolder/target/my-project-1.0-SNAPSHOT.jar > log.txt &
           sudo iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
           sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
