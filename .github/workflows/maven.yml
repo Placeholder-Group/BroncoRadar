@@ -49,5 +49,5 @@ jobs:
         port: 22
         script: |
           sudo killall java
-          sudo nohup java -DXms512m -DXmx1024m -jar MVN-ProjectFolder/target/my-project-1.0-SNAPSHOT.jar &
+          sudo nohup java -DXms512m -DXmx1024m -jar /home/ec2-user/MVN-ProjectFolder/target/my-project-1.0-SNAPSHOT.jar > /home/ec2-user/log.txt 2>&1 &
 
