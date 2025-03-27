@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -23,7 +22,7 @@
 			height: 700px;
 			width: 100%;
 			margin: 0 auto;
-			}
+		}
 
 		#locationIcon {
 			cursor: pointer;
@@ -33,12 +32,35 @@
 		}
 
 		#locationIcon:hover {
-			color: #006400;  /* Dark green to match the marker */
+			color: #006400; /* Dark green to match the marker */
 		}
 
 		/* Style for building labels */
 		.custom-label {
 			z-index: 400;
+			background-color: rgba(46, 71, 31, 0.8);
+			color: beige;
+			padding: 3px 3px;
+			border-radius: 8px;
+			font-size: 16px;
+			font-weight: bold;
+			text-align: center;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			cursor: pointer;
+			white-space: nowrap;
+			user-select: none;
+		}
+
+		/* New style for measurement text: no box, just black text on blue background */
+		.measurement-text {
+			background: blue;
+			color: black;
+			padding: 2px 4px;
+			font-size: 16px;
+			font-weight: bold;
+			white-space: nowrap;
 		}
 
 		/* Style for location marker to appear above building labels */
@@ -49,6 +71,50 @@
 		/* Make the location marker popup appear above everything */
 		.leaflet-popup {
 			z-index: 1001;
+		}
+
+		/* Additional styling for the distance measurement UI */
+		#distanceDirectory {
+			max-width: 1200px;
+			margin: 20px auto;
+			padding: 10px;
+			background-color: rgb(236, 185, 47);
+			border-radius: 25px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			text-align: center;
+		}
+
+		#distanceDirectory h3 {
+			font-family: monospace;
+			color: rgba(46, 71, 31, 0.8);
+			font-size: 3vw;
+		}
+
+		#distanceDirectory select,
+		#distanceDirectory button {
+			padding: 10px 20px;
+			font-size: 16px;
+			font-weight: bold;
+			margin: 5px;
+			border-radius: 5px;
+			border: none;
+		}
+
+		#distanceDirectory select {
+			background-color: #fff;
+			color: #333;
+			border: 1px solid #ccc;
+		}
+
+		#distanceDirectory button {
+			background-color: darkgreen;
+			color: beige;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+
+		#distanceDirectory button:hover {
+			background-color: #45a049;
 		}
 	</style>
 </head>
@@ -74,6 +140,19 @@
 		<ul id="labelList"></ul>
 	</div>
 
+	<!-- Distance Measurement UI -->
+	<div id="distanceDirectory">
+		<h3>Distance Measurement</h3>
+		<select id="locationSelect1">
+			<option value="">Select First Location</option>
+		</select>
+		<select id="locationSelect2">
+			<option value="">Select Second Location</option>
+		</select>
+		<button id="measureButton">Measure Distance</button>
+		<button id="clearMeasurementButton">Clear Measurement</button>
+	</div>
+
 	<!-- Load Leaflet JavaScript -->
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
 	<script>
@@ -86,24 +165,23 @@
 			[34.064770, -117.807255]   // Northeast corner (latitude, longitude)
 		];
 
-		 // Define default location (Kellogg West) in 2025
+		// Define default location (Kellogg West) in 2025
 		var defaultLocation = {
 			lat: 34.056735,
 			lng: -117.824680,
 			name: "Kellogg West"
 		};
 
-		// Initialize the map with dragging and scroll wheel zoom disabled
+		// Initialize the map with dragging and scroll wheel zoom enabled
 		var map = L.map('map', {
-			scrollWheelZoom: true, // Disable scroll zoom
-			dragging: true,           // Enable map dragging
+			scrollWheelZoom: true,
+			dragging: true,
 			minZoom: zoomLevel,
-			zoomControl: true,        // Enable zoom controls
-			maxBounds: bounds,        // Set the drag boundaries
-			maxBoundsViscosity: 1.0   // Make the bounds harder to break
+			zoomControl: true,
+			maxBounds: bounds,
+			maxBoundsViscosity: 1.0
 		}).setView([latitude, longitude], zoomLevel);
 
-		 // Add after map initialization
 		var locationMarker = null;
 
 		// Load and display tile layer on the map using OpenStreetMap tiles
@@ -118,7 +196,7 @@
 		// Minimum zoom level to show labels
 		var labelMinZoom = 17;
 
-		// Create the labels and store them in an array
+		// Create the markers array
 		var markers = [
 			{ lat: 34.057919, lng: -117.821342, label: "15", name: "Library" },
 			{ lat: 34.058464, lng: -117.824813, label: "8", name: "Science" },
@@ -137,7 +215,7 @@
 			{ lat: 34.057759, lng: -117.824463, label: "5", name: "CLASS" }
 		];
 
-		// Function to create custom label markers
+		// Function to create building markers
 		function createCustomLabel(lat, lng, text) {
 			var customLabel = L.divIcon({
 				className: 'custom-label',
@@ -147,7 +225,6 @@
 			return L.marker([lat, lng], { icon: customLabel });
 		}
 
-		// Create markers and add them to the map
 		var createdMarkers = [];
 		markers.forEach(function (markerData) {
 			var marker = createCustomLabel(markerData.lat, markerData.lng, markerData.label);
@@ -155,65 +232,49 @@
 			createdMarkers.push({ marker: marker, label: markerData.label });
 		});
 
-		// Function to handle zoom changes and show/hide labels
 		function updateLabelVisibility() {
 			var currentZoom = map.getZoom();
-
 			createdMarkers.forEach(function (markerData) {
 				if (currentZoom < labelMinZoom) {
-					map.removeLayer(markerData.marker); // Ensure label is hidden
+					map.removeLayer(markerData.marker);
 				} else {
 					if (!map.hasLayer(markerData.marker)) {
-						map.addLayer(markerData.marker); // Show label only if not already added
+						map.addLayer(markerData.marker);
 					}
 				}
 			});
 		}
 
-		// Run the update function on zoom changes
 		map.on('zoomend', updateLabelVisibility);
-
-		// Also run it once on load to enforce initial visibility rules
 		updateLabelVisibility();
 
-		// Populate the directory with label buttons
+		// Populate building directory
 		const labelListElement = document.getElementById("labelList");
 		markers.forEach(function (markerData, index) {
 			var listItem = document.createElement("li");
 			var button = document.createElement("button");
 			button.textContent = `${markerData.name} - ${markerData.label} `;
-
-			// Add click event to center the map on the label's marker and zoom in
 			button.addEventListener("click", function () {
-				map.setView([markerData.lat, markerData.lng], 18); // Set the zoom level to 18 when clicking a label button
+				map.setView([markerData.lat, markerData.lng], 18);
 			});
 			listItem.appendChild(button);
 			labelListElement.appendChild(listItem);
 		});
 
-		// Filter labels based on search input
 		document.getElementById("searchBar").addEventListener("input", function () {
 			var searchQuery = this.value.toLowerCase();
-
-			// Show or hide label buttons based on search input
 			var labelButtons = document.querySelectorAll("#labelList button");
 			labelButtons.forEach(function (button) {
 				var labelName = button.textContent.toLowerCase();
-				if (labelName.includes(searchQuery)) {
-					button.parentElement.style.display = "inline-block";
-				} else {
-					button.parentElement.style.display = "none";
-				}
+				button.parentElement.style.display = labelName.includes(searchQuery) ? "inline-block" : "none";
 			});
 		});
 
-		// Scroll to search bar when search icon is clicked
-		document.getElementById("searchIcon").addEventListener("click", function() {
+		document.getElementById("searchIcon").addEventListener("click", function () {
 			document.getElementById("searchBar").scrollIntoView({ behavior: "smooth" });
 			document.getElementById("searchBar").focus();
 		});
 
-			// Create a custom icon for the "You are here" marker
 		var youAreHereIcon = L.divIcon({
 			className: 'custom-div-icon',
 			html: "<div style='background-color: #006400; width: 15px; height: 15px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.3);'></div>",
@@ -221,50 +282,38 @@
 			iconAnchor: [10, 10]
 		});
 
-		// Update the location icon click handler
-		document.getElementById('locationIcon').addEventListener('click', function() {
+		document.getElementById('locationIcon').addEventListener('click', function () {
 			if (locationMarker) {
 				map.removeLayer(locationMarker);
 			}
-			
-			// Check if geolocation is supported
 			if (!navigator.geolocation) {
 				alert("Geolocation is not supported by your browser");
 				return;
 			}
-		
-			// Request location with modified options
 			map.locate({
-				setView: true,      // Automatically center map on location
+				setView: true,
 				maxZoom: 18,
-				timeout: 10000,     // 10 second timeout
+				timeout: 10000,
 				enableHighAccuracy: true,
-				maximumAge: 0,      // Don't use cached position
-				watch: false        // Don't watch continuously
+				maximumAge: 0,
+				watch: false
 			});
 		});
 
-		 // Add location event handlers
-		map.on('locationfound', function(e) {
-			// Remove existing marker if it exists
+		map.on('locationfound', function (e) {
 			if (locationMarker) {
 				map.removeLayer(locationMarker);
 			}
-
-			// Check if location is within bounds
-			const isInBounds = e.latlng.lat >= bounds[0][0] && 
-							  e.latlng.lat <= bounds[1][0] && 
-							  e.latlng.lng >= bounds[0][1] && 
-							  e.latlng.lng <= bounds[1][1];
-
+			const isInBounds = e.latlng.lat >= bounds[0][0] &&
+				e.latlng.lat <= bounds[1][0] &&
+				e.latlng.lng >= bounds[0][1] &&
+				e.latlng.lng <= bounds[1][1];
 			if (isInBounds) {
-				// Use actual location if within bounds
-				locationMarker = L.marker(e.latlng, {icon: youAreHereIcon}).addTo(map);
+				locationMarker = L.marker(e.latlng, { icon: youAreHereIcon }).addTo(map);
 				locationMarker.bindPopup("You are here");
 				map.setView(e.latlng, map.getZoom());
 			} else {
-				// Use default location if outside bounds
-				locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], {icon: youAreHereIcon}).addTo(map);
+				locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], { icon: youAreHereIcon }).addTo(map);
 				locationMarker.bindPopup("Default location: " + defaultLocation.name);
 				map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
 				alert("Location outside campus bounds. Defaulting to " + defaultLocation.name);
@@ -273,10 +322,9 @@
 
 		map.on('locationerror', onLocationError);
 
-		// Update the error handler with more specific messages
 		function onLocationError(e) {
 			let errorMessage;
-			switch(e.code) {
+			switch (e.code) {
 				case 1:
 					errorMessage = "Please allow location access in your browser settings.";
 					break;
@@ -289,17 +337,112 @@
 				default:
 					errorMessage = "Unable to find your location: " + e.message;
 			}
-			
 			alert(errorMessage);
-			
-			// Default to Kellogg West when location fails
 			if (locationMarker) {
 				map.removeLayer(locationMarker);
 			}
-			locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], {icon: youAreHereIcon}).addTo(map);
+			locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], { icon: youAreHereIcon }).addTo(map);
 			locationMarker.bindPopup("Default location: " + defaultLocation.name).openPopup();
 			map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
 		}
+
+		// ================================
+		// Distance Measurement Functionality
+		// ================================
+		var measurementLine = null;
+		var measurementMarker = null;
+
+		function populateDistanceSelects() {
+			var select1 = document.getElementById("locationSelect1");
+			var select2 = document.getElementById("locationSelect2");
+			markers.forEach(function (markerData, index) {
+				var optionText = markerData.name + " - " + markerData.label;
+				var option1 = document.createElement("option");
+				option1.value = index;
+				option1.text = optionText;
+				select1.appendChild(option1);
+				var option2 = document.createElement("option");
+				option2.value = index;
+				option2.text = optionText;
+				select2.appendChild(option2);
+			});
+		}
+
+		populateDistanceSelects();
+
+		function haversineDistance(lat1, lon1, lat2, lon2) {
+			function toRad(x) {
+				return x * Math.PI / 180;
+			}
+			var R = 3958.8; // Earth radius in miles
+			var dLat = toRad(lat2 - lat1);
+			var dLon = toRad(lon2 - lon1);
+			var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+				Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+				Math.sin(dLon / 2) * Math.sin(dLon / 2);
+			var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+			var d = R * c;
+			return d;
+		}
+
+		document.getElementById("measureButton").addEventListener("click", function () {
+			var select1 = document.getElementById("locationSelect1");
+			var select2 = document.getElementById("locationSelect2");
+			var index1 = select1.value;
+			var index2 = select2.value;
+
+			if (index1 === "" || index2 === "") {
+				alert("Please select both locations.");
+				return;
+			}
+
+			if (index1 === index2) {
+				alert("Please select two different locations.");
+				return;
+			}
+
+			var loc1 = markers[index1];
+			var loc2 = markers[index2];
+
+			if (measurementLine) {
+				map.removeLayer(measurementLine);
+			}
+			if (measurementMarker) {
+				map.removeLayer(measurementMarker);
+			}
+
+			// Draw a blue line between the two locations
+			measurementLine = L.polyline([[loc1.lat, loc1.lng], [loc2.lat, loc2.lng]], { color: "blue", weight: 4 }).addTo(map);
+
+			var midLat = (loc1.lat + loc2.lat) / 2;
+			var midLng = (loc1.lng + loc2.lng) / 2;
+
+			var distance = haversineDistance(loc1.lat, loc1.lng, loc2.lat, loc2.lng);
+			var walkingTime = (distance / 3) * 60; // in minutes
+
+			var labelContent = distance.toFixed(2) + " miles, " + Math.round(walkingTime) + " min walk";
+
+			// Use the measurement-text class to show plain text with blue highlighting
+			var labelIcon = L.divIcon({
+				className: 'measurement-text',
+				html: labelContent
+			});
+
+			measurementMarker = L.marker([midLat, midLng], { icon: labelIcon }).addTo(map);
+		});
+
+		document.getElementById("clearMeasurementButton").addEventListener("click", function () {
+			if (measurementLine) {
+				map.removeLayer(measurementLine);
+				measurementLine = null;
+			}
+			if (measurementMarker) {
+				map.removeLayer(measurementMarker);
+				measurementMarker = null;
+			}
+			document.getElementById("locationSelect1").value = "";
+			document.getElementById("locationSelect2").value = "";
+		});
 	</script>
 </body>
 
