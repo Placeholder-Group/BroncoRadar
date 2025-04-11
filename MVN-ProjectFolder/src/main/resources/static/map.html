@@ -122,8 +122,10 @@
 <body id="MainPage">
 
 	<header id="banner">
+		
 		<h1>BRONCORADAR</h1>
 		<!-- Search icon -->
+		<i id="feedback" class="fas fa-comments"></i>
 		<i id="searchIcon" class="fas fa-search"></i>
 		<!-- Location icon -->
 		<i id="locationIcon" class="fas fa-map-marker-alt"></i>
@@ -273,6 +275,10 @@
 		document.getElementById("searchIcon").addEventListener("click", function () {
 			document.getElementById("searchBar").scrollIntoView({ behavior: "smooth" });
 			document.getElementById("searchBar").focus();
+		});
+
+		document.getElementById("feedback").addEventListener("click", function () {
+			window.open("https://docs.google.com/forms/d/e/1FAIpQLSeFmv4OyJk1fb4gGKswilW8izrdXK6FPkYsvr4Vhj5_reQBlA/viewform?usp=header");
 		});
 
 		var youAreHereIcon = L.divIcon({
