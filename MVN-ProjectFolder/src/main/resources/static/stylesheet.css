@@ -122,3 +122,13 @@
 	top: 40px;
 }
 
+#feedback {
+
+	cursor: pointer;
+	font-size: 50px;
+	color: #fff;
+	position: absolute;
+	left: 40px;
+	top: 40px;
+}
+
