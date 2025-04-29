@@ -2,32 +2,40 @@ package com.example.webcontroller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest
-@Import(TestConfig.class)
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(WebController.class)
 public class WebControllerErrorHandlingTest {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private MockMvc mockMvc;
 
     @Test
-    public void testFileOperations() {
-        String response = restTemplate.getForObject("https://localhost:8443/fileOperations", String.class);
-        System.out.println("File Operations Response: " + response);
+    public void testFileOperations() throws Exception {
+        MvcResult result = mockMvc.perform(get("/fileOperations"))
+            .andExpect(status().isOk())
+            .andReturn();
+        System.out.println("File Operations Response: " + result.getResponse().getContentAsString());
     }
 
     @Test
-    public void testSolveEquations() {
-        String response = restTemplate.getForObject("https://localhost:8443/solveEquations", String.class);
-        System.out.println("Solve Equations Response: " + response);
+    public void testSolveEquations() throws Exception {
+        MvcResult result = mockMvc.perform(get("/solveEquations"))
+            .andExpect(status().isOk())
+            .andReturn();
+        System.out.println("Solve Equations Response: " + result.getResponse().getContentAsString());
     }
 
     @Test
-    public void testGuavaExample() {
-        String response = restTemplate.getForObject("https://localhost:8443/guavaExample", String.class);
-        System.out.println("Guava Example Response: " + response);
+    public void testGuavaExample() throws Exception {
+        MvcResult result = mockMvc.perform(get("/guavaExample"))
+            .andExpect(status().isOk())
+            .andReturn();
+        System.out.println("Guava Example Response: " + result.getResponse().getContentAsString());
     }
 }

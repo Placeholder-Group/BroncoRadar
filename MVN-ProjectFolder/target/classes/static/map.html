@@ -159,9 +159,9 @@
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" crossorigin=""></script>
 	<script>
 		// Hardcoded location of CPP
-		var latitude = 34.057919;
-		var longitude = -117.821342;
-		var zoomLevel = 16;
+		var latitude = 34.058577;  // Keep latitude the same
+		var longitude = -117.822704;  // Moved slightly left
+		var zoomLevel = 17;  // Keep zoom level the same
 		var bounds = [
 			[34.049198, -117.830944],  // Southwest corner (latitude, longitude)
 			[34.064770, -117.807255]   // Northeast corner (latitude, longitude)
@@ -181,8 +181,9 @@
 			minZoom: zoomLevel,
 			zoomControl: true,
 			maxBounds: bounds,
-			maxBoundsViscosity: 1.0
-		}).setView([latitude, longitude], zoomLevel);
+			maxBoundsViscosity: 1.0,
+			zoom: 17  // Set initial zoom level to match the view in the image
+		}).setView([latitude, longitude], 17);
 
 		var locationMarker = null;
 
@@ -217,19 +218,44 @@
 			{ lat: 34.057759, lng: -117.824463, label: "5", name: "CLASS" }
 		];
 
+		// Function to center map on a point with offset
+		function centerMapOnPoint(latlng) {
+			// First set zoom level if needed
+			if (map.getZoom() !== 18) {
+				map.setZoom(18);
+			}
+
+			// Simply center on the point directly
+			map.panTo(latlng, {
+				animate: true,
+				duration: 0.5,
+				easeLinearity: 0.5
+			});
+		}
+
 		// Function to create building markers
-		function createCustomLabel(lat, lng, text) {
+		function createCustomLabel(lat, lng, text, name) {
 			var customLabel = L.divIcon({
 				className: 'custom-label',
 				html: `<b>${text}</b>`,
 				iconSize: [30, 30]
 			});
-			return L.marker([lat, lng], { icon: customLabel });
+			var marker = L.marker([lat, lng], { icon: customLabel });
+			marker.bindPopup(`<b>${name}</b> - Building ${text}`);
+			marker.on('click', function(e) {
+				// Prevent the default marker click behavior
+				L.DomEvent.stopPropagation(e);
+				centerMapOnPoint(e.target.getLatLng());
+				setTimeout(() => {
+					marker.openPopup();
+				}, 500); // Wait for pan animation to complete
+			});
+			return marker;
 		}
 
 		var createdMarkers = [];
 		markers.forEach(function (markerData) {
-			var marker = createCustomLabel(markerData.lat, markerData.lng, markerData.label);
+			var marker = createCustomLabel(markerData.lat, markerData.lng, markerData.label, markerData.name);
 			marker.addTo(map);
 			createdMarkers.push({ marker: marker, label: markerData.label });
 		});
@@ -257,7 +283,16 @@
 			var button = document.createElement("button");
 			button.textContent = `${markerData.name} - ${markerData.label} `;
 			button.addEventListener("click", function () {
-				map.setView([markerData.lat, markerData.lng], 18);
+				var latlng = L.latLng(markerData.lat, markerData.lng);
+				centerMapOnPoint(latlng);
+				// Find and open the corresponding marker's popup after centering
+				setTimeout(() => {
+					createdMarkers.forEach(function(markerObj) {
+						if (markerObj.marker.getLatLng().equals([markerData.lat, markerData.lng])) {
+							markerObj.marker.openPopup();
+						}
+					});
+				}, 500); // Wait for pan animation to complete
 			});
 			listItem.appendChild(button);
 			labelListElement.appendChild(listItem);
@@ -296,61 +331,93 @@
 				alert("Geolocation is not supported by your browser");
 				return;
 			}
-			map.locate({
-				setView: true,
-				maxZoom: 18,
-				timeout: 10000,
+			navigator.geolocation.getCurrentPosition(function(position) {
+				var userLat = position.coords.latitude;
+				var userLng = position.coords.longitude;
+				
+				const isInBounds = userLat >= bounds[0][0] &&
+					userLat <= bounds[1][0] &&
+					userLng >= bounds[0][1] &&
+					userLng <= bounds[1][1];
+
+				if (isInBounds) {
+					var latlng = L.latLng(userLat, userLng);
+					locationMarker = L.marker(latlng, { icon: youAreHereIcon }).addTo(map);
+					locationMarker.bindPopup("You are here");
+					
+					// Force zoom level first
+					map.once('zoomend', function() {
+						centerMapOnPoint(latlng);
+						setTimeout(() => {
+							locationMarker.openPopup();
+						}, 600);
+					});
+					
+					if (map.getZoom() !== 18) {
+						map.setZoom(18);
+					} else {
+						centerMapOnPoint(latlng);
+						setTimeout(() => {
+							locationMarker.openPopup();
+						}, 600);
+					}
+				} else {
+					var defaultLatLng = L.latLng(defaultLocation.lat, defaultLocation.lng);
+					locationMarker = L.marker(defaultLatLng, { icon: youAreHereIcon }).addTo(map);
+					locationMarker.bindPopup("Default location: " + defaultLocation.name);
+					
+					// Force zoom level first
+					map.once('zoomend', function() {
+						centerMapOnPoint(defaultLatLng);
+						setTimeout(() => {
+							locationMarker.openPopup();
+						}, 600);
+					});
+					
+					if (map.getZoom() !== 18) {
+						map.setZoom(18);
+					} else {
+						centerMapOnPoint(defaultLatLng);
+						setTimeout(() => {
+							locationMarker.openPopup();
+						}, 600);
+					}
+					
+					alert("Location outside campus bounds. Defaulting to " + defaultLocation.name);
+				}
+				// Refresh the dropdowns to include "Your Location" option
+				populateDistanceSelects();
+			}, function(error) {
+				console.error("Error getting location:", error);
+				var defaultLatLng = L.latLng(defaultLocation.lat, defaultLocation.lng);
+				locationMarker = L.marker(defaultLatLng, { icon: youAreHereIcon }).addTo(map);
+				locationMarker.bindPopup("Default location: " + defaultLocation.name);
+				
+				// Force zoom level first
+				map.once('zoomend', function() {
+					centerMapOnPoint(defaultLatLng);
+					setTimeout(() => {
+						locationMarker.openPopup();
+					}, 600);
+				});
+				
+				if (map.getZoom() !== 18) {
+					map.setZoom(18);
+				} else {
+					centerMapOnPoint(defaultLatLng);
+					setTimeout(() => {
+						locationMarker.openPopup();
+					}, 600);
+				}
+				
+				alert("Unable to get your location. Defaulting to " + defaultLocation.name);
+				populateDistanceSelects();
+			}, {
 				enableHighAccuracy: true,
-				maximumAge: 0,
-				watch: false
+				timeout: 10000,
+				maximumAge: 0
 			});
 		});
-
-		map.on('locationfound', function (e) {
-			if (locationMarker) {
-				map.removeLayer(locationMarker);
-			}
-			const isInBounds = e.latlng.lat >= bounds[0][0] &&
-				e.latlng.lat <= bounds[1][0] &&
-				e.latlng.lng >= bounds[0][1] &&
-				e.latlng.lng <= bounds[1][1];
-			if (isInBounds) {
-				locationMarker = L.marker(e.latlng, { icon: youAreHereIcon }).addTo(map);
-				locationMarker.bindPopup("You are here");
-				map.setView(e.latlng, map.getZoom());
-			} else {
-				locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], { icon: youAreHereIcon }).addTo(map);
-				locationMarker.bindPopup("Default location: " + defaultLocation.name);
-				map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
-				alert("Location outside campus bounds. Defaulting to " + defaultLocation.name);
-			}
-		});
-
-		map.on('locationerror', onLocationError);
-
-		function onLocationError(e) {
-			let errorMessage;
-			switch (e.code) {
-				case 1:
-					errorMessage = "Please allow location access in your browser settings.";
-					break;
-				case 2:
-					errorMessage = "Location unavailable. Please try again or use the default location.";
-					break;
-				case 3:
-					errorMessage = "Location request timed out. Please try again.";
-					break;
-				default:
-					errorMessage = "Unable to find your location: " + e.message;
-			}
-			alert(errorMessage);
-			if (locationMarker) {
-				map.removeLayer(locationMarker);
-			}
-			locationMarker = L.marker([defaultLocation.lat, defaultLocation.lng], { icon: youAreHereIcon }).addTo(map);
-			locationMarker.bindPopup("Default location: " + defaultLocation.name).openPopup();
-			map.setView([defaultLocation.lat, defaultLocation.lng], zoomLevel);
-		}
 
 		// ================================
 		// Distance Measurement Functionality
@@ -361,6 +428,25 @@
 		function populateDistanceSelects() {
 			var select1 = document.getElementById("locationSelect1");
 			var select2 = document.getElementById("locationSelect2");
+			
+			// Clear existing options
+			select1.innerHTML = '<option value="">Select First Location</option>';
+			select2.innerHTML = '<option value="">Select Second Location</option>';
+			
+			// Add "Your Location" option if location is available
+			if (locationMarker) {
+				var yourLocationOption1 = document.createElement("option");
+				yourLocationOption1.value = "your_location";
+				yourLocationOption1.text = "Your Location";
+				select1.appendChild(yourLocationOption1);
+				
+				var yourLocationOption2 = document.createElement("option");
+				yourLocationOption2.value = "your_location";
+				yourLocationOption2.text = "Your Location";
+				select2.appendChild(yourLocationOption2);
+			}
+			
+			// Add building options
 			markers.forEach(function (markerData, index) {
 				var optionText = markerData.name + " - " + markerData.label;
 				var option1 = document.createElement("option");
@@ -402,13 +488,34 @@
 				return;
 			}
 
-			if (index1 === index2) {
+			if ((index1 === index2 && index1 !== "your_location") || (index1 === "your_location" && index2 === "your_location")) {
 				alert("Please select two different locations.");
 				return;
 			}
 
-			var loc1 = markers[index1];
-			var loc2 = markers[index2];
+			var loc1, loc2;
+
+			// Get first location
+			if (index1 === "your_location") {
+				if (!locationMarker) {
+					alert("Your location is not available. Please enable location services.");
+					return;
+				}
+				loc1 = locationMarker.getLatLng();
+			} else {
+				loc1 = markers[index1];
+			}
+
+			// Get second location
+			if (index2 === "your_location") {
+				if (!locationMarker) {
+					alert("Your location is not available. Please enable location services.");
+					return;
+				}
+				loc2 = locationMarker.getLatLng();
+			} else {
+				loc2 = markers[index2];
+			}
 
 			if (measurementLine) {
 				map.removeLayer(measurementLine);
@@ -418,17 +525,24 @@
 			}
 
 			// Draw a blue line between the two locations
-			measurementLine = L.polyline([[loc1.lat, loc1.lng], [loc2.lat, loc2.lng]], { color: "blue", weight: 4 }).addTo(map);
+			measurementLine = L.polyline([
+				[loc1.lat || loc1.lat, loc1.lng || loc1.lng],
+				[loc2.lat || loc2.lat, loc2.lng || loc2.lng]
+			], { color: "blue", weight: 4 }).addTo(map);
 
-			var midLat = (loc1.lat + loc2.lat) / 2;
-			var midLng = (loc1.lng + loc2.lng) / 2;
+			var midLat = ((loc1.lat || loc1.lat) + (loc2.lat || loc2.lat)) / 2;
+			var midLng = ((loc1.lng || loc1.lng) + (loc2.lng || loc2.lng)) / 2;
 
-			var distance = haversineDistance(loc1.lat, loc1.lng, loc2.lat, loc2.lng);
+			var distance = haversineDistance(
+				loc1.lat || loc1.lat,
+				loc1.lng || loc1.lng,
+				loc2.lat || loc2.lat,
+				loc2.lng || loc2.lng
+			);
 			var walkingTime = (distance / 3) * 60; // in minutes
 
 			var labelContent = distance.toFixed(2) + " miles, " + Math.round(walkingTime) + " min walk";
 
-			// Use the measurement-text class to show plain text with blue highlighting
 			var labelIcon = L.divIcon({
 				className: 'measurement-text',
 				html: labelContent
