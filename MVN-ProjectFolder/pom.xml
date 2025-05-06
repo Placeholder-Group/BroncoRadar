@@ -16,7 +16,7 @@
   <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.7</version> <!-- You can use the latest version -->
+        <version>3.2.3</version>
     </parent>
 
   <dependencies>
@@ -33,13 +33,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-    <!-- JUnit 4 -->
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <scope>test</scope>
-    </dependency>
 
     <!-- Apache Commons IO -->
     <dependency>
@@ -65,14 +58,14 @@
     <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>4.5.1</version>
+        <version>5.10.0</version>
         <scope>test</scope>
     </dependency>
     
     <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-junit-jupiter</artifactId>
-        <version>4.5.1</version>
+        <version>5.10.0</version>
         <scope>test</scope>
     </dependency>
 
@@ -84,7 +77,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.7</version>
+                <version>3.2.3</version>
                 <executions>
                     <execution>
                         <goals>

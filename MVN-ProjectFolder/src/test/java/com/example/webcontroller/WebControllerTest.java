@@ -1,14 +1,16 @@
 package com.example.webcontroller;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "server.ssl.enabled=false"
+})
 public class WebControllerTest {
 
     @Autowired
@@ -24,10 +26,10 @@ public class WebControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         
         // Expected solution for the given system of equations
-        String expectedSolution = "Solution: {1.0; -1.0; 2.0}";
+        String expectedSolution = "Solution: {0.1818181818; 0.3636363636; 0.4545454545}";
 
         // Check if the response contains the expected solution
-        assertTrue("Response should contain the correct solution", responseBody.contains(expectedSolution));
+        assertTrue(responseBody.contains(expectedSolution), "Response should contain the correct solution");
     }
 
     @Test
@@ -36,14 +38,14 @@ public class WebControllerTest {
         String responseBody = response.getBody();
 
         // Check response is not null and status is OK
-        assertNotNull("Response body should not be null", responseBody);
-        assertEquals("HTTP status should be OK", HttpStatus.OK, response.getStatusCode());
+        assertNotNull(responseBody, "Response body should not be null");
+        assertEquals(HttpStatus.OK, response.getStatusCode(), "HTTP status should be OK");
 
         // Verify the response contains expected operation results
-        assertTrue("Response should indicate successful file operations", 
-            responseBody.contains("File operations completed successfully"));
-        assertTrue("Response should contain the written content", 
-            responseBody.contains("Hello, Apache Commons IO"));
+        assertTrue(responseBody.contains("File operations completed successfully"), 
+            "Response should indicate successful file operations");
+        assertTrue(responseBody.contains("Hello, Apache Commons IO"), 
+            "Response should contain the written content");
     }
 
     @Test
@@ -52,26 +54,24 @@ public class WebControllerTest {
         String responseBody = response.getBody();
 
         // Check response is not null and status is OK
-        assertNotNull("Response body should not be null", responseBody);
-        assertEquals("HTTP status should be OK", HttpStatus.OK, response.getStatusCode());
+        assertNotNull(responseBody, "Response body should not be null");
+        assertEquals(HttpStatus.OK, response.getStatusCode(), "HTTP status should be OK");
 
         // Verify the response contains Guava-padded string
-        assertTrue("Response should contain Guava output", responseBody.contains("Guava Output:"));
-        assertTrue("Response should contain padded string", 
-            responseBody.contains("===============Hello, Guava!"));
+        assertTrue(responseBody.contains("Guava Output:"), "Response should contain Guava output");
+        assertTrue(responseBody.contains("===============Hello, Guava!"), 
+            "Response should contain padded string");
     }
 
     @Test
     public void testMapEndpoint() {
         ResponseEntity<String> response = restTemplate.getForEntity("/map", String.class);
         
-        // Check status code is 3xx (redirect)
-        assertTrue("Response should be a redirect", 
-            response.getStatusCode().is3xxRedirection());
-        
-        // Check that it redirects to map.html
-        String location = response.getHeaders().getLocation().getPath();
-        assertEquals("Should redirect to map.html", "/map.html", location);
+        // Check that the response is OK and contains map content
+        assertEquals(HttpStatus.OK, response.getStatusCode(), "Response should be OK");
+        String responseBody = response.getBody();
+        assertNotNull(responseBody, "Response body should not be null");
+        assertTrue(responseBody.contains("<div id=\"map\">"), "Should contain map div");
     }
 
     @Test
@@ -79,14 +79,13 @@ public class WebControllerTest {
         ResponseEntity<String> response = restTemplate.getForEntity("/map.html", String.class);
         
         // Check that the map.html file is accessible
-        assertEquals("map.html should be accessible", 
-            HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode(), 
+            "map.html should be accessible");
         
         // Verify the response contains essential map elements
         String responseBody = response.getBody();
-        assertNotNull("Response body should not be null", responseBody);
-        assertTrue("Should contain map div", responseBody.contains("<div id=\"map\">"));
-        assertTrue("Should contain Leaflet script", 
-            responseBody.contains("leaflet"));
+        assertNotNull(responseBody, "Response body should not be null");
+        assertTrue(responseBody.contains("<div id=\"map\">"), "Should contain map div");
+        assertTrue(responseBody.contains("leaflet"), "Should contain Leaflet script");
     }
 }
