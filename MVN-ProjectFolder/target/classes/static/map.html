@@ -162,10 +162,11 @@
 		var latitude = 34.058577;  // Keep latitude the same
 		var longitude = -117.822704;  // Moved slightly left
 		var zoomLevel = 17;  // Keep zoom level the same
-		var bounds = [
-			[34.049198, -117.830944],  // Southwest corner (latitude, longitude)
-			[34.064770, -117.807255]   // Northeast corner (latitude, longitude)
-		];
+		
+		// Define bounds more clearly
+		var southWest = [34.049198, -117.830944];  // Southwest corner
+		var northEast = [34.064770, -117.807255];  // Northeast corner
+		var bounds = [southWest, northEast];
 
 		// Define default location (Kellogg West) in 2025
 		var defaultLocation = {
@@ -335,10 +336,20 @@
 				var userLat = position.coords.latitude;
 				var userLng = position.coords.longitude;
 				
-				const isInBounds = userLat >= bounds[0][0] &&
-					userLat <= bounds[1][0] &&
-					userLng >= bounds[0][1] &&
-					userLng <= bounds[1][1];
+				console.log("User location:", userLat, userLng);
+				console.log("Southwest bound:", southWest);
+				console.log("Northeast bound:", northEast);
+				
+				// Check if within latitude bounds (north-south)
+				var isWithinLatitude = userLat >= southWest[0] && userLat <= northEast[0];
+				// Check if within longitude bounds (east-west)
+				var isWithinLongitude = userLng >= southWest[1] && userLng <= northEast[1];
+				
+				const isInBounds = isWithinLatitude && isWithinLongitude;
+				
+				console.log("Latitude check:", isWithinLatitude, "(", userLat, "between", southWest[0], "and", northEast[0], ")");
+				console.log("Longitude check:", isWithinLongitude, "(", userLng, "between", southWest[1], "and", northEast[1], ")");
+				console.log("Is in bounds:", isInBounds);
 
 				if (isInBounds) {
 					var latlng = L.latLng(userLat, userLng);
